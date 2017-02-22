@@ -1,2 +1,4 @@
-<*>: package(lwt.unix), package(unix)
+<src/**>: include
+<src/*>: package(lwt.unix), package(unix)
+<src/*>: package(ppx_deriving.std), package(ppx_sexp_conv)
 true: annot, bin_annot

@@ -1,18 +1,6 @@
 let (>>=) = Lwt.(>>=)
 
 
-let dispatch data =
-  let _startswith s1 s2 =
-    String.sub s1 0 (String.length s2)
-    |> String.equal s2
-  in
-  if _startswith data "GET" then (
-    print_endline "http";
-    Connection.connect "127.0.0.1" 10000
-  ) else
-    Lwt.return None
-
-
 let rec on_chunk autosrv conn connsrv len =
   let data = Bytes.sub_string conn.Connection.buf 0 len in
   (* |> Bytes.escaped *)
@@ -24,7 +12,7 @@ let rec on_chunk autosrv conn connsrv len =
      (match autosrv, connsrv with
       | true, None ->
          (* todo: start reverse receive *)
-         let newconn = dispatch (Bytes.copy data) in
+         let newconn = Dispatcher.dispatch (Bytes.copy data) in
          let _start_recevier () =
            (newconn >>=
               (function
@@ -64,8 +52,7 @@ let rec acceptor sock () =
       acceptor sock ())
 
 
-let () =
-  let port = 9000 in
+let start port =
   let sock = Connection._socket () in
   Lwt_main.run (
       Lwt.try_bind
