@@ -15,4 +15,6 @@ let parse_args () =
 let () =
   let port, config = parse_args () in
   let config = Rules_config.load config in
+  let module Dispatcher = Dispatcher.Make_dispatcher(struct let config=config end) in
+  let module Proxy = Proxy.Make_proxy(Dispatcher) in
   Proxy.start port
