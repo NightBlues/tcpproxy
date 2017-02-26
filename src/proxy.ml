@@ -41,13 +41,21 @@ let rec on_chunk autosrv conn connsrv len =
          | Some connsrv -> receive false conn (Some connsrv))
 and receive autosrv conn connsrv =
   let open Connection in
-  Lwt_unix.recv conn.sock conn.buf 0 conn.buf_size []
-  >>=
-    on_chunk true conn connsrv
+  Lwt.try_bind
+    (fun () ->
+      Lwt_unix.recv conn.sock conn.buf 0 conn.buf_size [])
+    (on_chunk true conn connsrv)
+    (fun exn ->
+       Common.print_exc
+         (Printf.sprintf "Connection with %s suddenly closed"
+            (_idclient conn.addr))
+         exn;
+       Lwt.return ())
 
 
 let reactor (sock, addr) () =
-  Printf.printf "accepted connection from %s\n" (Connection._idclient addr);
+  Printf.printf "Accepted connection from %s" (Connection._idclient addr);
+  flush stdout;
   let conn = Connection.create_connection sock addr in
   receive true conn None
 

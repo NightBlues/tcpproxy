@@ -35,7 +35,8 @@ let create_connection sock addr =
   conn
 
 let close_connection conn =
-  Printf.printf "Closing connection with %s\n" (_idclient conn.addr);
+  Printf.printf "Closing connection with %s" (_idclient conn.addr);
+  flush stdout;
   Lwt_unix.close conn.sock
 
 
@@ -62,8 +63,15 @@ let send conn data =
   match conn with
   | None -> Lwt.return None
   | Some conn ->
-     Lwt_unix.send conn.sock data 0 (Bytes.length data) []
-     >>=
-       (function
+    Lwt.try_bind
+      (fun () -> Lwt_unix.send conn.sock data 0 (Bytes.length data) [])
+      (function
         | 0 -> Lwt.return None
         | _ -> Lwt.return (Some conn))
+      (fun exn ->
+         Common.print_exc
+           (Printf.sprintf "Could not proxy data to %s"
+              (_idclient conn.addr))
+           exn;
+         Lwt.return None)
+      

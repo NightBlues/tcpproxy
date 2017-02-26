@@ -19,7 +19,15 @@ module Make_dispatcher (C:sig val config: Rules_config.t end) : Dispatcher = str
       | [] -> Lwt.return None
       | {data; address} :: tl when comparer data ->
         let host, port = address in
-        Connection.connect host port
+        Lwt.try_bind
+          (fun () -> Connection.connect host port)
+          (fun conn -> Lwt.return conn)
+          (fun exn ->
+             Common.print_exc
+               (Printf.sprintf "Could not dispatch to backend %s:%d"
+                  host port)
+               exn;
+             Lwt.return None)
       | _ :: tl -> _loop tl
     in
     _loop config
