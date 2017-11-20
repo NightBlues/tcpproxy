@@ -73,7 +73,7 @@ let start port =
   Lwt_main.run (
       Lwt.try_bind
         (* (fun () -> (Lwt_unix.Versioned.bind_2 sock (Unix.ADDR_INET (Unix.inet_addr_any, port)))) *)
-        (fun () -> (Lwt_unix.bind sock (Unix.ADDR_INET (Unix.inet_addr_any, port))) |> Lwt.return)
+        (fun () -> (Lwt_unix.bind sock (Unix.ADDR_INET (Unix.inet_addr_any, port))))
         (fun () ->
           Lwt_unix.listen sock 10; acceptor sock ())
         (fun exn -> print_endline "Could not bind to port"; Lwt.return ()))
