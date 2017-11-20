@@ -1,0 +1,15 @@
+[Unit]
+Description=TcpProxy
+After=network.target auditd.service
+
+[Service]
+WorkingDirectory=/etc/tcpproxy
+ExecStart=/usr/bin/tcpproxy config.scm -port 80
+KillMode=process
+StandardOutput=journal
+StandardError=journal
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+Alias=tcpproxy.service
